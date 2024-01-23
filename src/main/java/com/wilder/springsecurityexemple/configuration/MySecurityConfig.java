@@ -19,12 +19,16 @@ import org.springframework.context.annotation.Configuration;
 public class MySecurityConfig {
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain web(HttpSecurity http) throws Exception {
+	 
+
 		http.authorizeHttpRequests((authz) -> {
 			try {
 				authz
-				
-						.anyRequest().authenticated()
+						.requestMatchers("/").permitAll()
+						.requestMatchers("/avengers/assemble").hasRole("CHAMPION")
+						.requestMatchers("/secret-bases").hasRole("DIRECTOR")
+						 
 						.and().formLogin()
 						.and().httpBasic();
 			} catch (Exception e) {
@@ -32,6 +36,7 @@ public class MySecurityConfig {
 				e.printStackTrace();
 			}
 		});
+
 		return http.build();
 	}
 
@@ -41,19 +46,18 @@ public class MySecurityConfig {
 
 		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
-		UserDetails user = User
-				.withUsername("user")
-				.password(encoder.encode("password"))
-				.roles("USER")
+		UserDetails steve = User
+				.withUsername("Steve")
+				.password(encoder.encode("motdepasse"))
+				.roles("CHAMPION")
 				.build();
 
-		// Admin
-		UserDetails admin = User
-				.withUsername("admin")
-				.password(encoder.encode("12345678"))
-				.roles("ADMIN")
+		UserDetails nick = User
+				.withUsername("Nick")
+				.password(encoder.encode("flerken"))
+				.roles("DIRECTOR")
 				.build();
 
-		return new InMemoryUserDetailsManager(List.of(user, admin));
+		return new InMemoryUserDetailsManager(List.of(steve, nick));
 	}
 }
